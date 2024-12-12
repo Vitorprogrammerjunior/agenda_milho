@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #search {
+            display: block;
+            margin: 10px auto 20px;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: none;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .actions button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+        .actions .entregue {
+            background-color: green !important;
+        }
+        .actions .deletar {
+            background-color: red !important;
+        }
+
+        .Deletar{
+            background-color: red !important;
+        }
+
+        .Entregue{
+            background-color: green !important;
+        }
+        .entregue-row {
+            background-color: #e9ffe9 !important; /* Fundo verde claro */
+        }
+        .entregue-row td {
+            color: #2a7b2a !important; /* Cor do texto verde escuro */
+        }
+
+        .entregue-text {
+            display: flex;
+            align-items: center;
+            color: green;
+        }
+        .entregue-text i {
+            margin-left: 5px;
+        }
+        button {
+            display: block;
+            margin: 20px ;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+    <h1>Agenda</h1>
+    <div style="text-align: center; margin-bottom: 10px; font-size: 16px; font-weight: bold;" >
+        <h3 id="indicadorPedidos"></h3>
+    </div>
+    
+    <input type="text" id="search" placeholder="Buscar cliente pelo nome">
+    <div style="padding: 0px 150px;">
+    <table id="tabelaPedidos">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Quantidade</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+    <button onclick="window.location.href='adicionar.html'">Adicionar Pedido</button>
+</div>
+
+    <script>
+        function atualizarIndicador() {
+            const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+            const pedidosPendentes = pedidos.filter(pedido => !pedido.entregue).length;
+    
+            const indicador = document.getElementById('indicadorPedidos');
+            
+            if (pedidos.length === 0) {
+                indicador.innerText = "Todos os pedidos satisfeitos!!!";
+            } else if (pedidosPendentes === 0) {
+                indicador.innerHTML = `<h3 style="color:green;">Todos os pedidos satisfeitos!!!</h3>`;
+            } else {
+                indicador.innerHTML = `<h3 style="color:red;">Pedidos Pendentes: ${pedidosPendentes}</h3>`;
+            }
+        }
+    
+        function renderPedidos() {
+            const tabela = document.querySelector('#tabelaPedidos tbody');
+            tabela.innerHTML = '';
+    
+            const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+            const busca = document.getElementById('search').value.toLowerCase();
+    
+            const pedidosFiltrados = pedidos
+                .filter(pedido => pedido.nome.toLowerCase().includes(busca))
+                .sort((a, b) => a.nome.localeCompare(b.nome));
+    
+            if (pedidosFiltrados.length === 0 && busca.trim() !== '') {
+                tabela.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; font-weight: bold; color: red;">
+                            Cliente não encontrado
+                        </td>
+                    </tr>
+                `;
+            } else {
+                pedidosFiltrados.forEach(pedido => {
+                    const row = document.createElement('tr');
+                    if (pedido.entregue) row.classList.add('entregue-row');
+    
+                    row.innerHTML = `
+                        <td><strong>${pedido.nome}</strong></td>
+                        <td>${pedido.quantidade}🌽</td>
+                        <td><strong>${new Date(pedido.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</strong></td>
+                        <td>
+                            ${pedido.entregue 
+                                ? '<p class="status-entregue">Pedido entregue ✔</p>'
+                                : `<button class="Entregue" onclick="marcarComoEntregue(${pedido.id})">Entregue</button>`}
+                            <button class="Deletar" onclick="deletarPedido(${pedido.id})">Deletar</button>
+                        </td>
+                    `;
+    
+                    tabela.appendChild(row);
+                });
+            }
+    
+            atualizarIndicador(); // Atualiza o indicador após a renderização
+        }
+    
+        function marcarComoEntregue(id) {
+            const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+            const pedido = pedidos.find(p => p.id === id);
+            if (pedido) {
+                pedido.entregue = true;
+                localStorage.setItem('pedidos', JSON.stringify(pedidos));
+                renderPedidos();
+            }
+        }
+    
+        function deletarPedido(id) {
+            let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+            pedidos = pedidos.filter(p => p.id !== id);
+            localStorage.setItem('pedidos', JSON.stringify(pedidos));
+            renderPedidos();
+        }
+    
+        document.getElementById('search').addEventListener('input', renderPedidos);
+        window.onload = renderPedidos;
+    </script>
+    
+    
+</body>
+</html>
