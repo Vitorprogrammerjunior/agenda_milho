@@ -5,12 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agenda</title>
     <style>
+
+        * {
+            box-sizing: border-box; /* Garante que padding e borda sejam incluídos na largura total */
+        }
+        
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             background-color: #f7f7f7;
         }
+
+        html, body {
+            overflow-x: hidden;
+            margin: 0; /* Certifique-se de remover qualquer margem padrão */
+        }
+
         h1 {
             text-align: center;
             color: #333;
@@ -120,7 +131,7 @@
         <tbody></tbody>
     </table>
 </div>
-    <button onclick="window.location.href='Adicionar.html'">Adicionar Pedido</button>
+    <button onclick="window.location.href='adicionar.html'">Adicionar Pedido</button>
 </div>
 
     <script>
